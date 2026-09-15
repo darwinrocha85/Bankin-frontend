@@ -90,7 +90,12 @@ export function ClientView({ client, onLogout }: ClientViewProps) {
   function handlePurchase() {
     const amount = Number(amountInput);
     if (selectedCard && amount > 0) {
-      withBusy(() => purchase(selectedCard.card_id, amount)).then(() => setAmountInput(""));
+      // Manda una "note" fija identificando esta app como origen del cobro
+      // -- lo mismo que se espera que haga cualquier otra app que llame a
+      // este mismo endpoint (ver api.ts / README del backend).
+      withBusy(() => purchase(selectedCard.card_id, amount, "BankIn Frontend")).then(() =>
+        setAmountInput("")
+      );
     }
   }
 
@@ -209,6 +214,7 @@ export function ClientView({ client, onLogout }: ClientViewProps) {
                     <th>Tipo</th>
                     <th>Monto</th>
                     <th>Estado</th>
+                    <th>Origen</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -222,6 +228,7 @@ export function ClientView({ client, onLogout }: ClientViewProps) {
                           {tx.status === "COMPLETED" ? "Completada" : "Anulada"}
                         </span>
                       </td>
+                      <td className="muted small">{tx.note ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>

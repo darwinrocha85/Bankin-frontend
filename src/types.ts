@@ -35,6 +35,7 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   status: TransactionStatus;
+  note?: string | null;
   created_at: string;
   updated_at: string;
 }

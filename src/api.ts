@@ -6,6 +6,12 @@ import type { BankOverview, Card, Client, ClientOverview, Role, Transaction } fr
 // mostrarla en la UI como referencia (ver App.tsx).
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
+// Clave opcional para el endpoint de cobro (POST /transactions/purchase),
+// pensado para que lo llamen otras apps además de este frontend. Solo hace
+// falta si el backend tiene configurada EXTERNAL_API_KEY (ver .env.example
+// del backend); si no, esta variable puede quedar vacía sin problema.
+const API_KEY = import.meta.env.VITE_API_KEY ?? "";
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -15,9 +21,12 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  // Merge real de headers: un `...options` a secas pisaría por completo el
+  // Content-Type por defecto en cuanto alguna llamada (como purchase, con
+  // X-Api-Key) mande sus propios headers.
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: { "Content-Type": "application/json", ...options?.headers },
   });
 
   if (!response.ok) {
@@ -76,10 +85,16 @@ export function getTransactionsForCard(cardId: string): Promise<Transaction[]> {
   return request(`/transactions/card/${cardId}`);
 }
 
-export function purchase(cardId: string, amount: number): Promise<Transaction> {
+export function purchase(cardId: string, amount: number, note?: string): Promise<Transaction> {
+  // Mismo endpoint que usaría una app externa para cobrar -- por eso manda
+  // el header de API key si está configurada (ver API_KEY arriba) y una
+  // "note" con quién origina el cobro (el backend guarda lo que le manden;
+  // este frontend manda un nombre fijo, ver ClientView.tsx). Si el backend
+  // no exige EXTERNAL_API_KEY, el header simplemente se ignora.
   return request("/transactions/purchase", {
     method: "POST",
-    body: JSON.stringify({ card_id: cardId, amount }),
+    headers: API_KEY ? { "X-Api-Key": API_KEY } : undefined,
+    body: JSON.stringify({ card_id: cardId, amount, note }),
   });
 }
 
@@ -90,8 +105,12 @@ export function recharge(cardId: string, amount: number): Promise<Transaction> {
   });
 }
 
-export function annulTransaction(transactionId: number): Promise<Transaction> {
-  return request(`/transactions/${transactionId}/annul`, { method: "POST" });
+// Anular una transacción es una acción exclusiva del gerente: el backend
+// exige manager_id y valida el rol (ver routers/transactions.py).
+export function annulTransaction(transactionId: number, managerId: number): Promise<Transaction> {
+  return request(`/transactions/${transactionId}/annul?manager_id=${managerId}`, {
+    method: "POST",
+  });
 }
 
 // ---- Gerente ----
@@ -106,4 +125,12 @@ export function getAllClients(managerId: number): Promise<Client[]> {
 
 export function getClientOverview(managerId: number, clientId: number): Promise<ClientOverview> {
   return request(`/manager/clients/${clientId}?manager_id=${managerId}`);
+}
+
+export function getAllCards(managerId: number): Promise<Card[]> {
+  return request(`/manager/cards?manager_id=${managerId}`);
+}
+
+export function getAllTransactions(managerId: number): Promise<Transaction[]> {
+  return request(`/manager/transactions?manager_id=${managerId}`);
 }

@@ -351,6 +351,19 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* Es un <button>: reset de estilos nativos + affordance de que es clicable */
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.05s;
+}
+
+.stat-tile:hover {
+  border-color: var(--primary);
+}
+
+.stat-tile:active {
+  transform: scale(0.98);
 }
 
 .stat-value {
@@ -361,6 +374,17 @@
 .stat-label {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+/* ---- Panel de detalle (al hacer click en un stat-tile) ---- */
+
+.detail-panel {
+  margin-bottom: 24px;
+}
+
+.btn.small {
+  padding: 6px 12px;
+  font-size: 12px;
 }
 
 /* ---- Utilidades ---- */
