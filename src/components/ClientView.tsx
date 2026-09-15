@@ -10,7 +10,8 @@ import {
   recharge,
 } from "../api";
 import type { Card, Client, Transaction } from "../types";
-import { CARD_STATUS_LABEL, formatDate, formatMoney, maskCardId } from "../utils";
+import { CARD_STATUS_LABEL, formatDate, formatMoney } from "../utils";
+import { CardIdText } from "./CardId";
 
 interface ClientViewProps {
   client: Client;
@@ -139,19 +140,22 @@ export function ClientView({ client, onLogout }: ClientViewProps) {
           <ul className="card-list">
             {cards.map((card) => (
               <li key={card.card_id}>
-                <button
-                  className={`card-list-item ${card.card_id === selectedCardId ? "selected" : ""}`}
-                  onClick={() => setSelectedCardId(card.card_id)}
-                >
-                  <div className="card-list-item-top">
-                    <span className="mono">{maskCardId(card.card_id)}</span>
-                    <span className={`badge badge-status-${card.status.toLowerCase()}`}>
-                      {CARD_STATUS_LABEL[card.status]}
-                    </span>
-                  </div>
-                  <div className="card-list-item-balance">${formatMoney(card.balance)}</div>
-                  <div className="muted small">Vence {card.date_expires}</div>
-                </button>
+                <div className={`card-list-item ${card.card_id === selectedCardId ? "selected" : ""}`}>
+                  <CardIdText cardId={card.card_id} />
+                  <button
+                    type="button"
+                    className="card-list-item-main"
+                    onClick={() => setSelectedCardId(card.card_id)}
+                  >
+                    <div className="card-list-item-top">
+                      <span className={`badge badge-status-${card.status.toLowerCase()}`}>
+                        {CARD_STATUS_LABEL[card.status]}
+                      </span>
+                    </div>
+                    <div className="card-list-item-balance">${formatMoney(card.balance)}</div>
+                    <div className="muted small">Vence {card.date_expires}</div>
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -163,7 +167,10 @@ export function ClientView({ client, onLogout }: ClientViewProps) {
           {selectedCard && (
             <>
               <div className="panel-header">
-                <h2>Tarjeta {maskCardId(selectedCard.card_id)}</h2>
+                <div>
+                  <p className="muted small card-detail-label">Tarjeta</p>
+                  <CardIdText cardId={selectedCard.card_id} />
+                </div>
                 <span className={`badge badge-status-${selectedCard.status.toLowerCase()}`}>
                   {CARD_STATUS_LABEL[selectedCard.status]}
                 </span>

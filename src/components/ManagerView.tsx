@@ -9,7 +9,8 @@ import {
   getClientOverview,
 } from "../api";
 import type { BankOverview, Card, Client, ClientOverview, Transaction } from "../types";
-import { CARD_STATUS_LABEL, formatDate, formatMoney, maskCardId } from "../utils";
+import { CARD_STATUS_LABEL, formatDate, formatMoney } from "../utils";
+import { CardIdText } from "./CardId";
 
 interface ManagerViewProps {
   manager: Client;
@@ -248,7 +249,9 @@ export function ManagerView({ manager, onLogout }: ManagerViewProps) {
                   {visibleCards.map((card) => (
                     <tr key={card.card_id}>
                       <td>{allClientsById.get(card.client_id)?.name ?? `#${card.client_id}`}</td>
-                      <td className="mono">{maskCardId(card.card_id)}</td>
+                      <td>
+                        <CardIdText cardId={card.card_id} />
+                      </td>
                       <td>
                         <span className={`badge badge-status-${card.status.toLowerCase()}`}>
                           {CARD_STATUS_LABEL[card.status]}
@@ -287,7 +290,9 @@ export function ManagerView({ manager, onLogout }: ManagerViewProps) {
                       <tr key={tx.id}>
                         <td>{formatDate(tx.created_at)}</td>
                         <td>{ownerNameForCard(tx.card_id)}</td>
-                        <td className="mono">{maskCardId(tx.card_id)}</td>
+                        <td>
+                          <CardIdText cardId={tx.card_id} />
+                        </td>
                         <td>{tx.type === "PURCHASE" ? "Compra" : "Recarga"}</td>
                         <td>${formatMoney(tx.amount)}</td>
                         <td>
@@ -352,7 +357,9 @@ export function ManagerView({ manager, onLogout }: ManagerViewProps) {
                 <tbody>
                   {clientOverview.cards.map((card) => (
                     <tr key={card.card_id}>
-                      <td className="mono">{maskCardId(card.card_id)}</td>
+                      <td>
+                        <CardIdText cardId={card.card_id} />
+                      </td>
                       <td>
                         <span className={`badge badge-status-${card.status.toLowerCase()}`}>
                           {CARD_STATUS_LABEL[card.status]}
@@ -388,7 +395,9 @@ export function ManagerView({ manager, onLogout }: ManagerViewProps) {
                     .map((tx) => (
                       <tr key={tx.id}>
                         <td>{formatDate(tx.created_at)}</td>
-                        <td className="mono">{maskCardId(tx.card_id)}</td>
+                        <td>
+                          <CardIdText cardId={tx.card_id} />
+                        </td>
                         <td>{tx.type === "PURCHASE" ? "Compra" : "Recarga"}</td>
                         <td>${formatMoney(tx.amount)}</td>
                         <td>

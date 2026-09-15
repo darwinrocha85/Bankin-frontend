@@ -17,6 +17,14 @@ export function maskCardId(cardId: string): string {
   return `•••• ${cardId.slice(-4)}`;
 }
 
+// Igual que maskCardId, pero con un interruptor: cuando showFull es true
+// devuelve el número completo. Pensado para el botón "ojo" que deja ver el
+// número entero -- hace falta para poder copiarlo y pegarlo, por ejemplo,
+// en el checkout de otra app (naveSpace) que le cobra a la tarjeta.
+export function displayCardId(cardId: string, showFull: boolean): string {
+  return showFull ? cardId : maskCardId(cardId);
+}
+
 export const CARD_STATUS_LABEL: Record<"CREATED" | "ACTIVE" | "CANCELLED", string> = {
   CREATED: "Creada (sin activar)",
   ACTIVE: "Activa",
